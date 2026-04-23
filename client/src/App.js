@@ -18,7 +18,7 @@ function App() {
     const formData = new FormData();
     formData.append("document", file);
 
-    const res = await fetch("http://localhost:5000/api/upload", {
+    const res = await fetch("https://smart-doc-backend-j6lu.onrender.com/api/upload", {
       method: "POST",
       body: formData
     });
@@ -33,7 +33,7 @@ function App() {
   const summarizeText = async () => {
     setLoading(true);
 
-    const res = await fetch("http://localhost:5000/api/summarize", {
+    const res = await fetch("https://smart-doc-backend-j6lu.onrender.com/api/summarize", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
