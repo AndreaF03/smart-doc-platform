@@ -10,10 +10,13 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const uploadFile = async () => {
-    if (!file) {
-      setMessage("Please choose a file.");
-      return;
-    }
+  if (!file) {
+    setMessage("Please choose a file.");
+    return;
+  }
+
+  try {
+    setMessage("Uploading...");
 
     const formData = new FormData();
     formData.append("document", file);
@@ -25,12 +28,21 @@ function App() {
 
     const data = await res.json();
 
-    setMessage(data.message);
-    setText(data.text);
+    setMessage(data.message || "Upload complete.");
+    setText(data.text || "");
     setSummary("");
-  };
+  } catch (error) {
+    setMessage("Upload failed.");
+  }
+};
 
   const summarizeText = async () => {
+  if (!text.trim()) {
+    setSummary("Upload file first.");
+    return;
+  }
+
+  try {
     setLoading(true);
 
     const res = await fetch("https://smart-doc-backend-j6lu.onrender.com/api/summarize", {
@@ -43,9 +55,13 @@ function App() {
 
     const data = await res.json();
 
-    setSummary(data.summary);
+    setSummary(data.summary || data.message || "No summary returned.");
+  } catch (error) {
+    setSummary("Summarization failed.");
+  } finally {
     setLoading(false);
-  };
+  }
+};
   const downloadPDF = () => {
   const doc = new jsPDF();
 
