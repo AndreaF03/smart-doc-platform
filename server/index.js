@@ -18,17 +18,9 @@ app.use(cors({
 app.use(express.json());
 
 // Storage config
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
+const upload = multer({
+  storage: multer.memoryStorage()
 });
-
-const upload = multer({ storage });
-
 // Home route
 app.get("/", (req, res) => {
   res.send("Backend Running 🚀");
@@ -41,23 +33,26 @@ app.post("/api/upload", upload.single("document"), async (req, res) => {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const filePath = path.join(__dirname, "uploads", req.file.filename);
     const ext = path.extname(req.file.originalname).toLowerCase();
 
-    let extractedText = "";
+let extractedText = "";
 
-    if (ext === ".txt") {
-      extractedText = fs.readFileSync(filePath, "utf8");
-    } else if (ext === ".pdf") {
-      const buffer = fs.readFileSync(filePath);
-      const data = await pdfParse(buffer);
-      extractedText = data.text;
-    } else if (ext === ".docx") {
-      const result = await mammoth.extractRawText({ path: filePath });
-      extractedText = result.value;
-    } else {
-      extractedText = "Unsupported file type";
-    }
+if (ext === ".txt") {
+  extractedText = req.file.buffer.toString("utf8");
+
+} else if (ext === ".pdf") {
+  const data = await pdfParse(req.file.buffer);
+  extractedText = data.text;
+
+} else if (ext === ".docx") {
+  const result = await mammoth.extractRawText({
+    buffer: req.file.buffer
+  });
+  extractedText = result.value;
+
+} else {
+  extractedText = "Unsupported file type";
+}
 
     res.json({
       message: "File uploaded & text extracted",
