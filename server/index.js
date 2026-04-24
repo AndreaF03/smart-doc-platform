@@ -35,32 +35,33 @@ app.post("/api/upload", upload.single("document"), async (req, res) => {
 
     const ext = path.extname(req.file.originalname).toLowerCase();
 
-let extractedText = "";
+    let extractedText = "";
 
-if (ext === ".txt") {
-  extractedText = req.file.buffer.toString("utf8");
+    if (ext === ".txt") {
+      extractedText = req.file.buffer.toString("utf8");
 
-} else if (ext === ".pdf") {
-  const data = await pdfParse(req.file.buffer);
-  extractedText = data.text;
+    } else if (ext === ".pdf") {
+      const data = await pdfParse(req.file.buffer);
+      extractedText = data.text;
 
-} else if (ext === ".docx") {
-  const result = await mammoth.extractRawText({
-    buffer: req.file.buffer
-  });
-  extractedText = result.value;
+    } else if (ext === ".docx") {
+      const result = await mammoth.extractRawText({
+        buffer: req.file.buffer
+      });
+      extractedText = result.value;
 
-} else {
-  extractedText = "Unsupported file type";
-}
+    } else {
+      extractedText = "Unsupported file type";
+    }
 
     res.json({
       message: "File uploaded & text extracted",
-      text: extractedText.substring(0, 3000),
+      text: extractedText.substring(0, 3000)
     });
+
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Server error" });
+    console.log("UPLOAD ERROR:", error);
+    res.status(500).json({ message: "Upload failed" });
   }
 });
 app.post("/api/summarize", async (req, res) => {
